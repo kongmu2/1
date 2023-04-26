@@ -1,0 +1,27 @@
+# TODO \u914D\u7F6E\u6570\u636E\u6E90\u76F8\u5173\u4FE1\u606F
+
+
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://47.98.180.78:3306/ssm_book?useSSL=false&useServerPrepStmts=true
+    username: ssm_book
+    password: 111111
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  web:
+    resources:
+      static-locations: classpath:/static
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 400MB
+server:
+  port: 8085
+

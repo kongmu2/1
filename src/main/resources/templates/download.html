@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>下载界面</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+
+</head>
+
+<body>
+<div class="well">
+<!--    <h3>后端hutool + 前端open方式</h3>-->
+<!--    <div th:if="${fileNames} == null">没有文件可下载</div>-->
+<!--    <ul>-->
+<!--        <li th:each="fileName : ${fileNames}" th:text="${fileName} + '  下载'"-->
+<!--            th:onclick="downloadFileByOpen([[${fileName}]])">-->
+<!--        </li>-->
+<!--    </ul>-->
+<!--    <br>-->
+<!--    <br>-->
+
+<!--    <h3>后端模仿hutool + 前端open方式</h3>-->
+<!--    <div th:if="${fileNames} == null">没有文件可下载</div>-->
+<!--    <div class="table-responsive">-->
+
+<!--        <div th:class="row" th:each="fileName : ${fileNames}" th:text="${fileName} + '  下载'"-->
+<!--                th:onclick="downloadFileByOpenAndSelf([[${fileName}]])">-->
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--    <ul>-->
+<!--        <li th:each="fileName : ${fileNames}" th:text="${fileName} + '  下载'"-->
+<!--            th:onclick="downloadFileByOpenAndSelf([[${fileName}]])">-->
+<!--        </li>-->
+<!--    </ul>-->
+<!--    <br>-->
+<!--    <br>-->
+
+<!--    <h3>后端返回值 + 前端Ajax方式</h3>-->
+    <div th:if="${fileNames} == null">没有文件可下载</div>
+    <div class="table-responsive">
+        <table class="table">
+            <tr>
+                <th>文件名</th>
+                <th>文件大小</th>
+                <th>操作</th>
+
+            </tr>
+            <tr th:each="fileName : ${fileNames}" >
+                <td th:text="${fileName}"></td>
+                <td th:onload="getsize([[${fileName}]])"></td>
+                <td class="btn btn-primary" th:text="下载" th:onclick="downloadFileByAjax([[${fileName}]])"></td>
+                <td class="btn btn-danger" th:text="删除" th:onclick="deletebyname([[${fileName}]])"></td>
+            </tr>
+        </table>
+        <div>
+            <a class="btn btn-primary" href="/upload">返回上传文件页面</a>
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+
+<script src="js/vue.js"></script>
+
+<script src="plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+
+<script src="js/axios-0.18.0.js"></script>
+
+<script>
+    function downloadFileByOpen(fileName) {
+        window.open("http://localhost:8085/download/hutool?fileName=" + fileName);
+    }
+    function downloadFileByOpenAndSelf(fileName) {
+        window.open("http://localhost:8085/download/hutool/self?fileName=" + fileName);
+    }
+    function downloadFileByAjax(fileName) {
+        let xhr = new XMLHttpRequest;
+        xhr.open("get", "/download/return?fileName=" + fileName, true);
+        //发送请求
+        xhr.send();
+        xhr.responseType = "blob";
+        xhr.onload = function () {
+            if (this.status === 200) {
+                let blob = new Blob([this.response]);
+                let elink = document.createElement('a');
+                elink.download = fileName;
+                elink.style.display = 'none';
+                elink.href = URL.createObjectURL(blob);
+                document.body.appendChild(elink);
+                elink.click();
+                // 释放URL 对象
+                URL.revokeObjectURL(elink.href);
+                document.body.removeChild(elink);
+            }
+        }
+    }
+    function downloadFileByAxios(fileName) {
+        axios({
+            url: "/download/return",
+            method: "get",
+            responseType: "blob",
+            params: {
+                fileName
+            }
+        }).then(function (res) {
+            console.log(res);
+            let blob = new Blob([res.data]);
+            let elink = document.createElement('a');
+            elink.download = fileName;
+            elink.style.display = 'none';
+            elink.href = URL.createObjectURL(blob);
+            document.body.appendChild(elink);
+            elink.click();
+            // 释放URL 对象
+            URL.revokeObjectURL(elink.href);
+            document.body.removeChild(elink);
+        })
+    }
+
+
+    // function deletebyname(fileName) {
+    //     axios({
+    //         url: "/delete/"+fileName,
+    //         method: "get",
+    //         responseType: "blob",
+    //         params: {
+    //             fileName
+    //         }
+    //     }).then(function (res) {
+    //         console.log(res);
+    //     })
+    // }
+
+
+    function deletebyname(fileName) {
+        $.ajax({
+            url: '/delete/'+fileName,
+            method: 'GET',
+            data: { fileName: fileName },
+            success: function(result) {
+                refresh();
+                alert('文件删除成功！');
+            },
+            error: function(xhr, status, error) {
+                alert('文件删除失败，错误信息：' + error);
+            },
+
+        });
+    }
+
+
+    function getsize(fileName) {
+        $.ajax({
+            url: '/getsize/'+fileName,
+            method: 'GET',
+            data: { fileName: fileName },
+            returnValue: {filesize: filesize},
+            success: function(result) {
+
+            },
+        });
+    }
+
+
+    function refresh() {
+        location.reload();
+    }
+
+
+
+
+
+
+</script>
+
+</html>
